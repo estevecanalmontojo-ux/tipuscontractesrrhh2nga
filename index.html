@@ -3,460 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Contractes Laborals - Gestió Administrativa</title>
+    <title>Simulador Oficial SEPE - 2n Gestió Administrativa</title>
     <style>
         :root {
-            --primary: #1a73e8;
-            --primary-dark: #1557b0;
-            --success: #34a853;
-            --error: #ea4335;
-            --bg-light: #f8f9fa;
-            --border: #dadce0;
+            --sepe-blue: #004494;
+            --sepe-yellow: #ffcc00;
+            --bg-gray: #f2f4f8;
+            --border-doc: #333333;
+            --correct: #2e7d32;
+            --correct-bg: #e8f5e9;
+            --wrong: #c62828;
+            --wrong-bg: #ffebee;
         }
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-light);
-            color: #202124;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: var(--bg-gray);
             margin: 0;
             padding: 0;
+            color: #111;
         }
-        header {
-            background-color: white;
-            border-bottom: 1px solid var(--border);
-            padding: 15px 30px;
+        /* Capçalera superior d'aplicació */
+        .app-header {
+            background-color: var(--sepe-blue);
+            color: white;
+            padding: 12px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        header h1 {
-            font-size: 1.2rem;
-            color: var(--primary);
+        .app-header h1 {
+            font-size: 1.1rem;
             margin: 0;
         }
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
+        .score-badge {
             background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            color: var(--sepe-blue);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
         }
-        /* Pantalla d'inici */
+
+        /* Pantalla Login */
         #login-screen {
-            max-width: 450px;
-            margin: 80px auto;
-            text-align: center;
+            max-width: 500px;
+            margin: 70px auto;
             background: white;
-            padding: 40px;
+            padding: 35px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            border-top: 6px solid var(--sepe-blue);
         }
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
+        #login-screen h2 {
+            margin-top: 0;
+            color: var(--sepe-blue);
         }
-        .form-group label {
+        .input-group {
+            margin: 20px 0;
+        }
+        .input-group label {
             display: block;
+            font-weight: bold;
             margin-bottom: 8px;
-            font-weight: 600;
         }
-        .form-group input {
+        .input-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
+            padding: 12px;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box;
             font-size: 1rem;
         }
-        .btn {
-            background-color: var(--primary);
+        .mail-info {
+            background: #e3f2fd;
+            border-left: 4px solid var(--sepe-blue);
+            padding: 12px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: var(--sepe-blue);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 13px 22px;
             font-size: 1rem;
+            font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
             width: 100%;
-            font-weight: 600;
-            transition: background 0.2s;
         }
-        .btn:hover {
-            background-color: var(--primary-dark);
+        .btn-primary:hover { background-color: #00306b; }
+
+        /* Contenidor Principal */
+        #main-app {
+            max-width: 1450px;
+            margin: 20px auto;
+            padding: 0 15px;
         }
-        /* Pestanyes */
-        .tabs {
+        .hidden { display: none !important; }
+
+        /* Navegació Pestanyes */
+        .tabs-bar {
             display: flex;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 25px;
-            overflow-x: auto;
+            gap: 6px;
+            border-bottom: 3px solid var(--sepe-blue);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .tab-btn {
-            background: none;
+            background: #dce3ec;
             border: none;
-            padding: 12px 20px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            padding: 12px 18px;
+            font-weight: bold;
+            color: #333;
             cursor: pointer;
-            color: #5f6368;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            white-space: nowrap;
+            border-radius: 6px 6px 0 0;
+            font-size: 0.9rem;
+            transition: 0.2s;
         }
         .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+            background: var(--sepe-blue);
+            color: white;
         }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        /* Disseny de l'exercici (Enunciat + Arrossegar + Contracte) */
-        .exercise-layout {
+
+        /* Estructura a 2 columnes: Cas Pràctic (Esquerra) + Model PDF SEPE (Dreta) */
+        .workspace {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 25px;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+            align-items: start;
         }
-        .enunciat-panel {
-            background: #f1f3f4;
-            padding: 20px;
+        .case-panel {
+            background: white;
+            padding: 18px;
             border-radius: 6px;
-            border: 1px solid var(--border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 70px;
+            max-height: calc(100vh - 90px);
+            overflow-y: auto;
+            border: 1px solid #d0d7de;
         }
-        .enunciat-panel h3 {
+        .case-panel h3 {
             margin-top: 0;
+            color: var(--sepe-blue);
             font-size: 1rem;
-            color: var(--primary-dark);
+            border-bottom: 2px solid var(--sepe-yellow);
+            padding-bottom: 6px;
         }
-        .draggable-pool {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .drag-item {
-            background: white;
-            border: 1px solid var(--primary);
-            color: var(--primary-dark);
-            padding: 8px 12px;
+        .case-story {
+            font-size: 0.85rem;
+            line-height: 1.45;
+            background: #f9fbfd;
+            padding: 10px;
             border-radius: 4px;
+            border: 1px solid #e1e8f0;
+            margin-bottom: 15px;
+        }
+        .tags-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .drag-tag {
+            background: #fff;
+            border: 1.5px solid var(--sepe-blue);
+            color: var(--sepe-blue);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            font-weight: bold;
             cursor: grab;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             user-select: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        .drag-item:active {
-            cursor: grabbing;
-        }
-        .contract-sheet {
-            border: 1px solid var(--border);
-            padding: 30px;
-            border-radius: 6px;
+        .drag-tag:active { cursor: grabbing; }
+
+        /* Estil Maquetació Oficial Document SEPE */
+        .sepe-document {
             background: white;
-            font-family: 'Times New Roman', Times, serif;
-            line-height: 1.6;
+            padding: 30px;
+            border: 1px solid #bbb;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+            font-size: 0.84rem;
         }
-        .contract-title {
+        .sepe-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-doc);
+            padding: 8px 15px;
+            margin-bottom: 12px;
+            background: #fafafa;
+            font-weight: bold;
+            font-size: 0.78rem;
+        }
+        .sepe-doc-title {
+            background: #d9d9d9;
+            border: 1px solid var(--border-doc);
             text-align: center;
             font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 20px;
+            padding: 7px;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
             text-transform: uppercase;
         }
-        .drop-zone {
-            display: inline-block;
-            min-width: 150px;
-            min-height: 24px;
-            border-bottom: 2px dashed var(--primary);
-            background: #e8f0fe;
-            padding: 2px 6px;
-            margin: 0 4px;
-            text-align: center;
-            vertical-align: middle;
+        .sepe-section-header {
+            background: #eaeaea;
+            border: 1px solid var(--border-doc);
+            border-bottom: none;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-top: 12px;
+        }
+        .sepe-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            border-top: 1px solid var(--border-doc);
+            border-left: 1px solid var(--border-doc);
+        }
+        .sepe-cell {
+            border-right: 1px solid var(--border-doc);
+            border-bottom: 1px solid var(--border-doc);
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .col-3 { grid-column: span 3; }
+        .col-4 { grid-column: span 4; }
+        .col-6 { grid-column: span 6; }
+        .col-8 { grid-column: span 8; }
+        .col-12 { grid-column: span 12; }
+
+        .field-label {
+            font-size: 0.68rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .clauses-box {
+            border: 1px solid var(--border-doc);
+            padding: 15px;
+            margin-top: 12px;
+            line-height: 1.85;
+        }
+        .clauses-box p { margin: 8px 0; }
+
+        /* Caselles per deixar anar (Dropzones) */
+        .dropzone {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 145px;
+            min-height: 26px;
+            border: 1.5px dashed var(--sepe-blue);
+            background-color: #f0f6ff;
             border-radius: 3px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 0.9rem;
+            padding: 2px 8px;
+            margin: 2px 4px;
+            font-weight: bold;
+            font-size: 0.82rem;
+            vertical-align: middle;
+            transition: all 0.2s;
         }
-        .drop-zone.drag-over {
-            background: #cce0ff;
-            border-color: var(--primary-dark);
+        .sepe-cell .dropzone {
+            width: 100%;
+            margin: 0;
         }
-        .drop-zone.filled {
-            background: #e6f4ea;
-            border-bottom: 2px solid var(--success);
-            color: #137333;
-            font-weight: 600;
+        .dropzone.dragover {
+            background-color: #cfe2ff;
+            border-color: #002752;
+            transform: scale(1.02);
         }
-        .actions-container {
-            margin-top: 30px;
-            text-align: right;
+        .dropzone.correct {
+            background-color: var(--correct-bg);
+            border: 1.5px solid var(--correct);
+            color: var(--correct);
         }
-        .hidden {
-            display: none !important;
+        .dropzone.auto-corrected {
+            background-color: var(--wrong-bg);
+            border: 1.5px solid var(--wrong);
+            color: var(--wrong);
         }
-        #resultat-final {
+
+        /* Taula per a Crida Fixos Discontinus */
+        .sepe-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .sepe-table th, .sepe-table td {
+            border: 1px solid var(--border-doc);
+            padding: 6px;
             text-align: center;
-            padding: 40px;
+            font-size: 0.78rem;
+        }
+        .sepe-table th { background: #eaeaea; }
+
+        .submit-bar {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Mòdul de Contractació - Segon de Gestió Administrativa</h1>
-        <span id="user-display" style="font-weight: 600; color: #5f6368;"></span>
-    </header>
-
-    <!-- PANTALLA D'INICI -->
-    <div id="login-screen" class="container">
-        <h2>Simulador de Contractes de Treball</h2>
-        <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">Introdueix el teu nom complet per començar l'exercici pràctic. Les respostes s'enviaran automàticament a <strong>ecanal1@iestremp.cat</strong>.</p>
-        <div class="form-group">
-            <label for="student-name">Nom i Cognoms de l'alumne/a:</label>
-            <input type="text" id="student-name" placeholder="Ex: Anna Pujol Martí" required>
-        </div>
-        <button class="btn" onclick="iniciarSimulador()">Començar Exercici</button>
-    </div>
-
-    <!-- CONTENIDOR PRINCIPAL DE L'APLICACIÓ (Ocult d'inici) -->
-    <div id="app-container" class="container hidden">
-        
-        <!-- PESTANYES -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="canviarPestanya(0)">1. Indefinit</button>
-            <button class="tab-btn" onclick="canviarPestanya(1)">2. Circumstàncies Producció</button>
-            <button class="tab-btn" onclick="canviarPestanya(2)">3. Contracte de Relleu</button>
-            <button class="tab-btn" onclick="canviarPestanya(3)">4. Substitució</button>
-            <button class="tab-btn" onclick="canviarPestanya(4)">5. Pràctiques Professionals</button>
-        </div>
-
-        <!-- 1. CONTRACTE INDEFINIT -->
-        <div class="tab-content active" id="tab-0">
-            <div class="exercise-layout">
-                <div class="enunciat-panel">
-                    <h3>Dades del Cas (Indefinit)</h3>
-                    <p style="font-size: 0.85rem;">Arrossega les dades correctes cap als espais en blanc del model de contracte:</p>
-                    <div class="draggable-pool" ondragover="allowDrop(event)">
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d1_1">Fustet i Germans, SL</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d1_2">B-25489623</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d1_3">Marc Ribas Soler</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d1_4">Indefinit Ordinari (100)</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d1_5">40 hores setmanals</div>
-                    </div>
-                </div>
-                <div class="contract-sheet">
-                    <div class="contract-title">Model Oficial - Contracte de Treball Indefinit</div>
-                    <p>Reunides les parts d'una banda l'empresa <span class="drop-zone" ondrop="drop(event, 'd1_1')" ondragover="allowDrop(event)" data-answer="Fustet i Germans, SL"></span> amb NIF <span class="drop-zone" ondrop="drop(event, 'd1_2')" ondragover="allowDrop(event)" data-answer="B-25489623"></span>, i de l'altra en/na <span class="drop-zone" ondrop="drop(event, 'd1_3')" ondragover="allowDrop(event)" data-answer="Marc Ribas Soler"></span>.</p>
-                    <p>Acorden subscriure un contracte de tipus <span class="drop-zone" ondrop="drop(event, 'd1_4')" ondragover="allowDrop(event)" data-answer="Indefinit Ordinari (100)"></span> a jornada completa de <span class="drop-zone" ondrop="drop(event, 'd1_5')" ondragover="allowDrop(event)" data-answer="40 hores setmanals"></span>.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. CIRCUMSTÀNCIES DE LA PRODUCCIÓ -->
-        <div class="tab-content" id="tab-1">
-            <div class="exercise-layout">
-                <div class="enunciat-panel">
-                    <h3>Dades del Cas (Circumstàncies)</h3>
-                    <div class="draggable-pool" ondragover="allowDrop(event)">
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d2_1">Comercial Agrícola del Montsec</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d2_2">Temporal per Producció</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d2_3">David Masriera Pons</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d2_4">31 de gener de 2027</div>
-                    </div>
-                </div>
-                <div class="contract-sheet">
-                    <div class="contract-title">Model Oficial - Circumstàncies de la Producció</div>
-                    <p>L'empresa <span class="drop-zone" ondrop="drop(event, 'd2_1')" ondragover="allowDrop(event)" data-answer="Comercial Agrícola del Montsec"></span> contracta a <span class="drop-zone" ondrop="drop(event, 'd2_3')" ondragover="allowDrop(event)" data-answer="David Masriera Pons"></span> sota la modalitat de contracte <span class="drop-zone" ondrop="drop(event, 'd2_2')" ondragover="allowDrop(event)" data-answer="Temporal per Producció"></span> per augment ocasional de comandes.</p>
-                    <p>La vigència finalitzarà el dia <span class="drop-zone" ondrop="drop(event, 'd2_4')" ondragover="allowDrop(event)" data-answer="31 de gener de 2027"></span>.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. CONTRACTE DE RELLEU -->
-        <div class="tab-content" id="tab-2">
-            <div class="exercise-layout">
-                <div class="enunciat-panel">
-                    <h3>Dades del Cas (Relleu)</h3>
-                    <div class="draggable-pool" ondragover="allowDrop(event)">
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d3_1">Contracte de Relleu</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d3_2">Mitja jornada (20 hores)</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d3_3">Jubilació parcial</div>
-                    </div>
-                </div>
-                <div class="contract-sheet">
-                    <div class="contract-title">Model Oficial - Contracte de Relleu a Mitja Jornada</div>
-                    <p>Per a cobrir la reducció de jornada per <span class="drop-zone" ondrop="drop(event, 'd3_3')" ondragover="allowDrop(event)" data-answer="Jubilació parcial"></span> d'un treballador veterà, es formalitza un <span class="drop-zone" ondrop="drop(event, 'd3_1')" ondragover="allowDrop(event)" data-answer="Contracte de Relleu"></span>.</p>
-                    <p>La prestació de serveis s'efectuarà a <span class="drop-zone" ondrop="drop(event, 'd3_2')" ondragover="allowDrop(event)" data-answer="Mitja jornada (20 hores)"></span>.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. CONTRACTE DE SUBSTITUCIÓ -->
-        <div class="tab-content" id="tab-3">
-            <div class="exercise-layout">
-                <div class="enunciat-panel">
-                    <h3>Dades del Cas (Substitució)</h3>
-                    <div class="draggable-pool" ondragover="allowDrop(event)">
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d4_1">Baixa per IT / Maternitat</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d4_2">Contracte de Substitució</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d4_3">Fins a la incorporació</div>
-                    </div>
-                </div>
-                <div class="contract-sheet">
-                    <div class="contract-title">Model Oficial - Contracte de Substitució</div>
-                    <p>Per cobrir temporalment un lloc de treball durant una <span class="drop-zone" ondrop="drop(event, 'd4_1')" ondragover="allowDrop(event)" data-answer="Baixa per IT / Maternitat"></span>, s'emet el <span class="drop-zone" ondrop="drop(event, 'd4_2')" ondragover="allowDrop(event)" data-answer="Contracte de Substitució"></span>.</p>
-                    <p>La durada del contracte s'establirà <span class="drop-zone" ondrop="drop(event, 'd4_3')" ondragover="allowDrop(event)" data-answer="Fins a la incorporació"></span> del treballador substituït.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 5. PRÀCTIQUES PROFESSIONALS -->
-        <div class="tab-content" id="tab-4">
-            <div class="exercise-layout">
-                <div class="enunciat-panel">
-                    <h3>Dades del Cas (Pràctiques)</h3>
-                    <div class="draggable-pool" ondragover="allowDrop(event)">
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d5_1">Títol de FP Grau Mitjà GA</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d5_2">Pràctiques Professionals</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="d5_3">Màxim 3 anys</div>
-                    </div>
-                </div>
-                <div class="contract-sheet">
-                    <div class="contract-title">Model Oficial - Contracte formatiu en Pràctiques</div>
-                    <p>Per a l'obtenció de pràctiques adequades al nivell d'estudis aportant el <span class="drop-zone" ondrop="drop(event, 'd5_1')" ondragover="allowDrop(event)" data-answer="Títol de FP Grau Mitjà GA"></span>.</p>
-                    <p>S'utilitza la modalitat de <span class="drop-zone" ondrop="drop(event, 'd5_2')" ondragover="allowDrop(event)" data-answer="Pràctiques Professionals"></span> dins el termini de <span class="drop-zone" ondrop="drop(event, 'd5_3')" ondragover="allowDrop(event)" data-answer="Màxim 3 anys"></span> des de la finalització dels estudis.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="actions-container">
-            <button class="btn" style="width: auto; padding: 12px 30px;" onclick="enviarExercici()">Enviar Resultats finals a Professor</button>
-        </div>
-
-    </div>
-
-    <!-- PANTALLA DE RESULTAT -->
-    <div id="resultat-screen" class="container hidden">
-        <div id="resultat-final">
-            <h2>Exercici Finalitzat i Enviat</h2>
-            <p id="feedback-text" style="font-size: 1.2rem; margin: 20px 0;"></p>
-            <p style="color: #666;">El correu amb la nota s'ha tramès correctament a <strong>ecanal1@iestremp.cat</strong>.</p>
-        </div>
-    </div>
-
-    <script>
-        let alumneNom = "";
-        let currentTab = 0;
-        const totalTabs = 5;
-
-        function iniciarSimulador() {
-            const input = document.getElementById('student-name');
-            if (!input.value.trim()) {
-                alert("Si us plau, introdueix el teu nom i cognoms.");
-                return;
-            }
-            alumneNom = input.value.trim();
-            document.getElementById('user-display').innerText = "Alumne: " + alumneNom;
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
-        }
-
-        function canviarPestanya(index) {
-            const tabs = document.querySelectorAll('.tab-btn');
-            const contents = document.querySelectorAll('.tab-content');
-            
-            tabs[currentTab].classList.remove('active');
-            contents[currentTab].classList.remove('active');
-            
-            currentTab = index;
-            
-            tabs[currentTab].classList.add('active');
-            contents[currentTab].classList.add('active');
-        }
-
-        // Funcionalitat Drag and Drop
-        function allowDrop(ev) {
-            ev.preventDefault();
-        }
-
-        function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.id);
-        }
-
-        function drop(ev, expectedAnswerKey) {
-            ev.preventDefault();
-            const dataId = ev.dataTransfer.getData("text");
-            const draggedElement = document.getElementById(dataId);
-            const targetZone = ev.target.classList.contains('drop-zone') ? ev.target : ev.target.closest('.drop-zone');
-            
-            if (targetZone && draggedElement) {
-                const correctText = targetZone.getAttribute('data-answer');
-                // Comprovació automàtica: si es posa a una zona, comprova si el text coincideix
-                if (draggedElement.innerText.trim() === correctText) {
-                    targetZone.innerText = draggedElement.innerText;
-                    targetZone.classList.add('filled');
-                    draggedElement.style.display = 'none'; // Amaga l'element un cop col·locat
-                } else {
-                    // Si no correspon exactament a aquesta zona, pots ajustar-ho o retornar-lo automàticament
-                    // Segons la teva petició: "si es fa alguna cosa erronea que la informació vagi a l'espai que li toca de forma automàtica"
-                    trobarIColellarAutomaticament(draggedElement);
-                }
-            }
-        }
-
-        function trobarIColellarAutomaticament(draggedElement) {
-            const zones = document.querySelectorAll('.drop-zone');
-            for (let zone of zones) {
-                if (zone.getAttribute('data-answer') === draggedElement.innerText.trim()) {
-                    zone.innerText = draggedElement.innerText;
-                    zone.classList.add('filled');
-                    draggedElement.style.display = 'none';
-                    break;
-                }
-            }
-        }
-
-        function calcularNota() {
-            let totalZones = document.querySelectorAll('.drop-zone').length;
-            let filledZones = document.querySelectorAll('.drop-zone.filled').length;
-            // Cada pestanya val 10 punts globalment, o la nota total sobre 10 calculada per percentatges d'encerts
-            let nota = (filledZones / totalZones) * 10;
-            return Math.round(nota * 100) / 100;
-        }
-
-        function enviarExercici() {
-            if (!confirm("Vols trametre definitivament el teu exercici? Recorda que només hi ha un intent.")) {
-                return;
-            }
-
-            const notaFinal = calcularNota();
-
-            // Càrrega de dades per enviar a Google Apps Script / Correu
-            const dataEnviament = {
-                alumne: alumneNom,
-                destinatari: "ecanal1@iestremp.cat",
-                nota: notaFinal
-            };
-
-            // URL del teu Web App de Google Apps Script (veure instruccions de configuració)
-            const scriptURL = "https://script.google.com/macros/s/EL_TEU_SCRIPT_ID_ACÍ/exec";
-
-            // Opcional: Enviament via fetch si disposes del desplegament de Google Apps Script
-            /*
-            fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataEnviament)
-            });
-            */
-
-            // Mostrem pantalla de resultat
-            document.getElementById('app-container').classList.add('hidden');
-            document.getElementById('resultat-screen').classList.remove('hidden');
-            document.getElementById('feedback-text').innerText = `${alumneNom}, la teva qualificació final és: ${notaFinal} / 10`;
-        }
-    </script>
-</body>
-</html>
+<div class="app-header">
+    <h1>SEPE - Pràctica Oficial de Contractació Laboral (2n Gestió Administrativa)</h1>
+    <div id="header-status" class="hidden">
+        <span id="student-badge" style="margin-right:
