@@ -23,7 +23,6 @@
             padding: 0;
             color: #111;
         }
-        /* Capçalera superior d'aplicació */
         .app-header {
             background-color: var(--sepe-blue);
             color: white;
@@ -48,8 +47,6 @@
             font-weight: bold;
             font-size: 0.95rem;
         }
-
-        /* Pantalla Login */
         #login-screen {
             max-width: 500px;
             margin: 70px auto;
@@ -95,18 +92,16 @@
             border-radius: 4px;
             cursor: pointer;
             width: 100%;
+            transition: background 0.2s;
         }
         .btn-primary:hover { background-color: #00306b; }
-
-        /* Contenidor Principal */
+        .btn-primary:disabled { background-color: #888; cursor: not-allowed; }
         #main-app {
             max-width: 1450px;
             margin: 20px auto;
             padding: 0 15px;
         }
         .hidden { display: none !important; }
-
-        /* Navegació Pestanyes */
         .tabs-bar {
             display: flex;
             gap: 6px;
@@ -129,8 +124,6 @@
             background: var(--sepe-blue);
             color: white;
         }
-
-        /* Estructura a 2 columnes: Cas Pràctic (Esquerra) + Model PDF SEPE (Dreta) */
         .workspace {
             display: grid;
             grid-template-columns: 360px 1fr;
@@ -182,8 +175,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         .drag-tag:active { cursor: grabbing; }
-
-        /* Estil Maquetació Oficial Document SEPE */
         .sepe-document {
             background: white;
             padding: 30px;
@@ -238,10 +229,10 @@
         }
         .col-3 { grid-column: span 3; }
         .col-4 { grid-column: span 4; }
+        .col-5 { grid-column: span 5; }
         .col-6 { grid-column: span 6; }
         .col-8 { grid-column: span 8; }
         .col-12 { grid-column: span 12; }
-
         .field-label {
             font-size: 0.68rem;
             font-weight: bold;
@@ -256,8 +247,6 @@
             line-height: 1.85;
         }
         .clauses-box p { margin: 8px 0; }
-
-        /* Caselles per deixar anar (Dropzones) */
         .dropzone {
             display: inline-flex;
             align-items: center;
@@ -293,8 +282,6 @@
             border: 1.5px solid var(--wrong);
             color: var(--wrong);
         }
-
-        /* Taula per a Crida Fixos Discontinus */
         .sepe-table {
             width: 100%;
             border-collapse: collapse;
@@ -307,7 +294,6 @@
             font-size: 0.78rem;
         }
         .sepe-table th { background: #eaeaea; }
-
         .submit-bar {
             background: white;
             padding: 20px;
@@ -335,7 +321,7 @@
     <h2>Identificació de l'Alumne/a</h2>
     <div class="mail-info">
         📧 <strong>Destinatari d'avaluació:</strong> <code>ecanal1@iestremp.cat</code><br>
-        <small>En finalitzar, el teu exercici s'enviarà automàticament a aquesta adreça.</small>
+        <small>En finalitzar, la nota s'enviarà de forma directa i automàtica al registre del professor.</small>
     </div>
     <p style="font-size: 0.88rem; color: #444; line-height: 1.5;">
         <strong>Normes de l'exercici:</strong><br>
@@ -421,7 +407,7 @@
         </div>
     </div>
 
-    <!-- ================= PESTANYA 2: CONTRACTE TEMPORAL (PRODUCCIÓ, RELLEU I SUBSTITUCIÓ) ================= -->
+    <!-- ================= PESTANYA 2: CONTRACTE TEMPORAL ================= -->
     <div class="tab-pane hidden" id="tab-1">
         <div class="workspace">
             <div class="case-panel">
@@ -637,25 +623,27 @@
             <strong>Destinatari dels resultats:</strong> <code>ecanal1@iestremp.cat</code><br>
             <small>Revisa que hagis passat per totes les 5 pestanyes abans d'enviar definitivament.</small>
         </div>
-        <button class="btn-primary" style="width: auto; padding: 14px 35px;" onclick="finishAndSend()">Finalitzar i Enviar Nota al Professor</button>
+        <button id="btn-submit" class="btn-primary" style="width: auto; padding: 14px 35px;" onclick="finishAndSend()">Finalitzar i Enviar Nota al Professor</button>
     </div>
 
 </div>
 
 <!-- 3. PANTALLA FINAL D'ENVIAMENT -->
 <div id="final-screen" class="hidden" style="max-width: 650px; margin: 70px auto; background: white; padding: 40px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
-    <h2 style="color: var(--sepe-blue);">Exercici Completat i Registrat</h2>
+    <h2 style="color: var(--sepe-blue);">Exercici Completat</h2>
     <p id="final-summary" style="font-size: 1.25rem; font-weight: bold; margin: 20px 0;"></p>
     <div id="final-breakdown" style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px; line-height: 1.8;"></div>
-    <p id="send-status" style="color: #2e7d32; font-weight: bold;"></p>
+    <p id="send-status" style="font-weight: bold; padding: 12px; border-radius: 6px;"></p>
 </div>
 
 <script>
-    let studentName = "";
-    // Enganxa aquí la URL del teu Google Apps Script desplegat (si vols enviament silenciós directe a Gmail + Sheets)
-    const GOOGLE_SCRIPT_URL = "";
+    // =========================================================================
+    // ENGANXA AQUÍ LA TEVA URL DE GOOGLE APPS SCRIPT (acabada en /exec) O FORMSPREE:
+    const ENDPOINT_URL = "ENGANXA_AQUI_LA_TEVA_URL";
+    // =========================================================================
 
-    // Estat de puntuació per pestanya
+    let studentName = "";
+
     const tabStats = [
         { total: 0, correctFirstTry: 0 },
         { total: 0, correctFirstTry: 0 },
@@ -691,7 +679,6 @@
             tabStats[t].total = zones.length;
             const pool = document.getElementById('pool-' + t);
 
-            // Creem les etiquetes i les barregem aleatòriament
             const items = zones.map((z, i) => ({
                 id: `tag_${t}_${i}`,
                 text: z.getAttribute('data-ans'),
@@ -742,14 +729,12 @@
         const expectedValue = targetZone.getAttribute('data-ans');
 
         if (draggedValue === expectedValue) {
-            // ENCERT A LA PRIMERA: Suma el percentatge corresponent
             targetZone.innerText = draggedValue;
             targetZone.classList.add('correct');
             targetZone.dataset.filled = "true";
             tagEl.remove();
             tabStats[tabIdx].correctFirstTry++;
         } else {
-            // ERROR: No suma punt i va automàticament a la casella que li toca
             const correctZone = Array.from(document.querySelectorAll(`.dropzone[data-tab="${tabIdx}"]`))
                 .find(z => z.getAttribute('data-ans') === draggedValue && z.dataset.filled !== "true");
 
@@ -770,7 +755,6 @@
             const tabScore10 = tabStats[t].total > 0
                 ? (tabStats[t].correctFirstTry / tabStats[t].total) * 10
                 : 0;
-            // Cada pestanya val un màxim de 2 punts de la nota global sobre 10
             const tabWeight2 = (tabScore10 / 10) * 2;
             globalScore += tabWeight2;
             document.getElementById('tscore-' + t).innerText = tabScore10.toFixed(2);
@@ -779,10 +763,14 @@
         return globalScore;
     }
 
-    function finishAndSend() {
+    async function finishAndSend() {
         if (!confirm("Segur que vols finalitzar i enviar la nota a ecanal1@iestremp.cat? Només es permet un enviament.")) {
             return;
         }
+
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.innerText = "Enviant resultats...";
 
         const finalGrade = updateScores().toFixed(2);
         const tabNames = [
@@ -795,9 +783,12 @@
 
         let breakdownHTML = "";
         let breakdownText = "";
+        let pScores = [];
+
         for (let t = 0; t < 5; t++) {
             const s10 = ((tabStats[t].correctFirstTry / tabStats[t].total) * 10).toFixed(2);
             const s2 = ((tabStats[t].correctFirstTry / tabStats[t].total) * 2).toFixed(2);
+            pScores.push(s10);
             breakdownHTML += `<div>• <strong>${tabNames[t]}:</strong> ${s10} / 10 punts <em>(${s2} / 2 pts globals)</em> — Encerts: ${tabStats[t].correctFirstTry}/${tabStats[t].total}</div>`;
             breakdownText += `- ${tabNames[t]}: ${s10}/10 (${s2}/2 pts) [${tabStats[t].correctFirstTry}/${tabStats[t].total} encerts]\n`;
         }
@@ -807,26 +798,41 @@
         document.getElementById('final-summary').innerText = `Alumne/a: ${studentName} — Qualificació Final: ${finalGrade} / 10`;
         document.getElementById('final-breakdown').innerHTML = breakdownHTML;
 
+        const statusEl = document.getElementById('send-status');
+        statusEl.style.background = "#fff3cd";
+        statusEl.style.color = "#856404";
+        statusEl.innerText = "⏳ Enviant qualificació de forma directa a ecanal1@iestremp.cat...";
+
         const payload = {
             alumne: studentName,
-            email_professor: "ecanal1@iestremp.cat",
-            nota_sobre_10: finalGrade,
-            detall: breakdownText
+            destinatari: "ecanal1@iestremp.cat",
+            nota_global: finalGrade,
+            pestanya_1: pScores[0],
+            pestanya_2: pScores[1],
+            pestanya_3: pScores[2],
+            pestanya_4: pScores[3],
+            pestanya_5: pScores[4],
+            detall_text: breakdownText
         };
 
-        if (GOOGLE_SCRIPT_URL) {
-            fetch(GOOGLE_SCRIPT_URL, {
+        try {
+            // Enviament silenciós compatible tant amb Google Apps Script com amb Formspree
+            await fetch(ENDPOINT_URL, {
                 method: "POST",
                 mode: "no-cors",
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
                 body: JSON.stringify(payload)
             });
-            document.getElementById('send-status').innerText = "✅ S'ha enviat automàticament el registre de qualificació a ecanal1@iestremp.cat.";
-        } else {
-            // Si encara no has enganxat la URL de Google Apps Script, obre l'enviament preparat per correu com a resguard
-            const subject = encodeURIComponent(`Nota Contractes SEPE 2n GA - ${studentName}: ${finalGrade}/10`);
-            const body = encodeURIComponent(`Alumne/a: ${studentName}\nNota Global: ${finalGrade} / 10\n\nDesglossament per pestanyes:\n${breakdownText}`);
-            window.location.href = `mailto:ecanal1@iestremp.cat?subject=${subject}&body=${body}`;
-            document.getElementById('send-status').innerText = "📨 S'ha generat l'enviament cap a ecanal1@iestremp.cat.";
+
+            statusEl.style.background = "#e8f5e9";
+            statusEl.style.color = "#2e7d32";
+            statusEl.innerText = "✅ Qualificació enviada i registrada correctament a ecanal1@iestremp.cat!";
+        } catch (err) {
+            statusEl.style.background = "#ffebee";
+            statusEl.style.color = "#c62828";
+            statusEl.innerText = "⚠️ Hi ha hagut un problema de connexió en l'enviament automàtic. Fes una captura d'aquesta pantalla per al professor.";
         }
     }
 </script>
