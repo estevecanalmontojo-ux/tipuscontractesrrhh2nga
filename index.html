@@ -130,6 +130,10 @@
             gap: 20px;
             align-items: start;
         }
+        @media (max-width: 950px) {
+            .workspace { grid-template-columns: 1fr; }
+            .case-panel { position: static; max-height: none; }
+        }
         .case-panel {
             background: white;
             padding: 18px;
@@ -218,3 +222,636 @@
             grid-template-columns: repeat(12, 1fr);
             border-top: 1px solid var(--border-doc);
             border-left: 1px solid var(--border-doc);
+        }
+        .sepe-cell {
+            border-right: 1px solid var(--border-doc);
+            border-bottom: 1px solid var(--border-doc);
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .col-3 { grid-column: span 3; }
+        .col-4 { grid-column: span 4; }
+        .col-5 { grid-column: span 5; }
+        .col-6 { grid-column: span 6; }
+        .col-8 { grid-column: span 8; }
+        .field-label {
+            font-size: 0.68rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .clauses-box {
+            border: 1px solid var(--border-doc);
+            padding: 15px;
+            margin-top: 12px;
+            line-height: 1.85;
+        }
+        .clauses-box p { margin: 8px 0; }
+        .dropzone {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 130px;
+            min-height: 26px;
+            border: 1.5px dashed var(--sepe-blue);
+            background-color: #f0f6ff;
+            border-radius: 3px;
+            padding: 2px 8px;
+            margin: 2px 4px;
+            font-weight: bold;
+            font-size: 0.82rem;
+            vertical-align: middle;
+            transition: all 0.2s;
+            word-break: break-word;
+            text-align: center;
+        }
+        .sepe-cell .dropzone {
+            width: 100%;
+            margin: 0;
+        }
+        .dropzone.dragover {
+            background-color: #cfe2ff;
+            border-color: #002752;
+            transform: scale(1.02);
+        }
+        .dropzone.correct {
+            background-color: var(--correct-bg);
+            border: 1.5px solid var(--correct);
+            color: var(--correct);
+        }
+        .dropzone.auto-corrected {
+            background-color: var(--wrong-bg);
+            border: 1.5px solid var(--wrong);
+            color: var(--wrong);
+        }
+        .sepe-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .sepe-table th, .sepe-table td {
+            border: 1px solid var(--border-doc);
+            padding: 6px;
+            text-align: center;
+            font-size: 0.78rem;
+        }
+        .sepe-table th { background: #eaeaea; }
+        .submit-bar {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <h1>SEPE - Pràctica Oficial de Contractació Laboral (2n Gestió Administrativa)</h1>
+    <div id="header-status" class="hidden">
+        <span id="student-badge" style="margin-right: 15px;"></span>
+        <span class="score-badge">Nota Global: <span id="global-score">0.00</span> / 10</span>
+    </div>
+</div>
+
+<!-- 1. PANTALLA D'IDENTIFICACIÓ -->
+<div id="login-screen">
+    <h2>Identificació de l'Alumne/a</h2>
+    <div class="mail-info">
+        📧 <strong>Destinatari d'avaluació:</strong> <code>ecanal1@iestremp.cat</code><br>
+        <small>En finalitzar, la nota s'enviarà de forma directa i automàtica al registre del professor.</small>
+    </div>
+    <p style="font-size: 0.88rem; color: #444; line-height: 1.5;">
+        <strong>Normes de l'exercici:</strong><br>
+        • L'exercici consta de <strong>5 pestanyes</strong> amb els models oficials del SEPE en català.<br>
+        • Cada pestanya val <strong>10 punts</strong> (2 punts sobre la nota final de 10).<br>
+        • <strong>Només hi ha 1 intent per dada:</strong> si arrossegues una dada a un espai incorrecte, no sumaràs el punt i la dada es col·locarà automàticament al seu lloc correcte en vermell.
+    </p>
+    <div class="input-group">
+        <label for="input-nom">Nom i Cognoms de l'alumne/a:</label>
+        <input type="text" id="input-nom" placeholder="Escriu el teu nom i cognoms...">
+    </div>
+    <button class="btn-primary" onclick="startApp()">Començar els 5 Contractes</button>
+</div>
+
+<!-- 2. APLICACIÓ PRINCIPAL -->
+<div id="main-app" class="hidden">
+
+    <div class="tabs-bar">
+        <button class="tab-btn active" onclick="openTab(0)" id="tbtn-0">1. Contracte Indefinit (Punts: <span id="tscore-0">0.0</span>/10)</button>
+        <button class="tab-btn" onclick="openTab(1)" id="tbtn-1">2. Contracte Temporal: Producció, Relleu i Substitució (Punts: <span id="tscore-1">0.0</span>/10)</button>
+        <button class="tab-btn" onclick="openTab(2)" id="tbtn-2">3. Formatiu Pràctica Professional (Punts: <span id="tscore-2">0.0</span>/10)</button>
+        <button class="tab-btn" onclick="openTab(3)" id="tbtn-3">4. Pacte Hores Complementàries (Punts: <span id="tscore-3">0.0</span>/10)</button>
+        <button class="tab-btn" onclick="openTab(4)" id="tbtn-4">5. Crida Fixos-Discontinus (Punts: <span id="tscore-4">0.0</span>/10)</button>
+    </div>
+
+    <!-- PESTANYA 1: CONTRACTE INDEFINIT -->
+    <div class="tab-pane" id="tab-0">
+        <div class="workspace">
+            <div class="case-panel">
+                <h3>Supòsit 1: Contracte Indefinit</h3>
+                <div class="case-story">
+                    L'empresa <strong>Fustet i Germans, SL</strong> (CIF <strong>B25489623</strong>), representada per <strong>Pere Fustet Prat</strong> (DNI <strong>40888999R</strong>) en concepte de <strong>Gerent</strong>, amb domicili a <strong>Pol. Ind. Vall d'Àger, 12</strong> de <strong>Tremp</strong> (CP <strong>25620</strong>), CCC del Règim <strong>General (0111)</strong> núm. <strong>25102345678</strong> dedicat a <strong>Fabricació de mobles</strong>.<br><br>
+                    Contracta a <strong>Marc Ribas Soler</strong> (DNI <strong>45892147K</strong>), nascut el <strong>12/05/1998</strong>, NASS <strong>251234567890</strong>, nivell <strong>Tècnic Superior</strong>, com a <strong>Oficial Administratiu</strong> (Grup <strong>Grup 4</strong>) per fer <strong>Gestió comptable i facturació</strong> a jornada completa de <strong>40</strong> h/setmana (de <strong>dilluns</strong> a <strong>divendres</strong>). Inicia el <strong>02/11/2026</strong>, prova de <strong>2 mesos</strong>, sou de <strong>24.000</strong> € (<strong>anuals</strong>) amb <strong>30 dies naturals</strong> de vacances. Conveni d'<strong>Oficines i Despatxos de Catalunya</strong>, comunicat al SEPE de <strong>Tremp</strong>. Codi de contracte: <strong>100</strong>.
+                </div>
+                <div class="tags-pool" id="pool-0"></div>
+            </div>
+
+            <div class="sepe-document">
+                <div class="sepe-banner">
+                    <span>MINISTERIO DE TRABAJO Y ECONOMÍA SOCIAL | SEPE</span>
+                    <span>Cofinançat per la Unió Europea - FSE+</span>
+                </div>
+                <div class="sepe-doc-title">CONTRACTE DE TREBALL INDEFINIT</div>
+
+                <div class="sepe-section-header">DADES DE L'EMPRESA</div>
+                <div class="sepe-grid">
+                    <div class="sepe-cell col-4"><span class="field-label">CIF/NIF/NIE</span><div class="dropzone" data-tab="0" data-ans="B25489623"></div></div>
+                    <div class="sepe-cell col-8"><span class="field-label">NOM O RAÓ SOCIAL DE L'EMPRESA</span><div class="dropzone" data-tab="0" data-ans="Fustet i Germans, SL"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">SR./SRA.</span><div class="dropzone" data-tab="0" data-ans="Pere Fustet Prat"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">NIF/NIE REPRESENTANT</span><div class="dropzone" data-tab="0" data-ans="40888999R"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">EN CONCEPTE (1)</span><div class="dropzone" data-tab="0" data-ans="Gerent"></div></div>
+                    <div class="sepe-cell col-6"><span class="field-label">DOMICILI SOCIAL</span><div class="dropzone" data-tab="0" data-ans="Pol. Ind. Vall d'Àger, 12"></div></div>
+                    <div class="sepe-cell col-3"><span class="field-label">MUNICIPI</span><div class="dropzone" data-tab="0" data-ans="Tremp"></div></div>
+                    <div class="sepe-cell col-3"><span class="field-label">CODI POSTAL</span><div class="dropzone" data-tab="0" data-ans="25620"></div></div>
+                </div>
+
+                <div class="sepe-section-header">DADES DEL COMPTE DE COTITZACIÓ</div>
+                <div class="sepe-grid">
+                    <div class="sepe-cell col-4"><span class="field-label">RÈGIM</span><div class="dropzone" data-tab="0" data-ans="General (0111)"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">CODI (CCC)</span><div class="dropzone" data-tab="0" data-ans="25102345678"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">ACTIVITAT ECONÒMICA</span><div class="dropzone" data-tab="0" data-ans="Fabricació de mobles"></div></div>
+                </div>
+
+                <div class="sepe-section-header">DADES DE LA PERSONA TREBALLADORA</div>
+                <div class="sepe-grid">
+                    <div class="sepe-cell col-4"><span class="field-label">SR./SRA.</span><div class="dropzone" data-tab="0" data-ans="Marc Ribas Soler"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">NIF/NIE</span><div class="dropzone" data-tab="0" data-ans="45892147K"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">DATA NAIXEMENT (dd/mm/aaaa)</span><div class="dropzone" data-tab="0" data-ans="12/05/1998"></div></div>
+                    <div class="sepe-cell col-6"><span class="field-label">Nº SEGURETAT SOCIAL</span><div class="dropzone" data-tab="0" data-ans="251234567890"></div></div>
+                    <div class="sepe-cell col-6"><span class="field-label">NIVELL FORMATIU</span><div class="dropzone" data-tab="0" data-ans="Tècnic Superior"></div></div>
+                </div>
+
+                <div class="sepe-section-header">CLÀUSULES DEL CONTRACTE INDEFINIT</div>
+                <div class="clauses-box">
+                    <p><strong>PRIMERA:</strong> el/la treballador/a prestarà els seus serveis com <span class="dropzone" data-tab="0" data-ans="Oficial Administratiu"></span> inclòs en el grup professional de <span class="dropzone" data-tab="0" data-ans="Grup 4"></span> per a la realització de les funcions <span class="dropzone" data-tab="0" data-ans="Gestió comptable i facturació"></span>.</p>
+                    <p><strong>TERCERA:</strong> A temps complet: la jornada de treball serà de <span class="dropzone" data-tab="0" data-ans="40"></span> hores setmanals, prestades de <span class="dropzone" data-tab="0" data-ans="dilluns"></span> a <span class="dropzone" data-tab="0" data-ans="divendres"></span> amb els descansos establerts legalment.</p>
+                    <p><strong>QUARTA:</strong> la durada del present contracte serà INDEFINIDA, iniciant-se la relació laboral en data <span class="dropzone" data-tab="0" data-ans="02/11/2026"></span> i s'estableix un període de prova de <span class="dropzone" data-tab="0" data-ans="2 mesos"></span>.</p>
+                    <p><strong>CINQUENA:</strong> el/la treballador/a percebrà una retribució total de <span class="dropzone" data-tab="0" data-ans="24.000"></span> euros bruts <span class="dropzone" data-tab="0" data-ans="anuals"></span>.</p>
+                    <p><strong>SETENA:</strong> la durada de les vacances anuals serà de <span class="dropzone" data-tab="0" data-ans="30 dies naturals"></span>.</p>
+                    <p><strong>OCTAVA i ONZENA:</strong> serà aplicable el Conveni Col·lectiu de <span class="dropzone" data-tab="0" data-ans="Oficines i Despatxos de Catalunya"></span> i es comunicarà al Servei Públic d'Ocupació de <span class="dropzone" data-tab="0" data-ans="Tremp"></span>. Codi de contracte Indefinit Ordinari Temps Complet: <span class="dropzone" data-tab="0" data-ans="100"></span>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTANYA 2: CONTRACTE TEMPORAL -->
+    <div class="tab-pane hidden" id="tab-1">
+        <div class="workspace">
+            <div class="case-panel">
+                <h3>Supòsit 2: Model Oficial de Contracte Temporal</h3>
+                <div class="case-story">
+                    L'empresa <strong>Comercial Agrícola del Montsec, SCCL</strong> (CIF <strong>F25789123</strong>), de <strong>Tremp</strong>, contracta a <strong>David Masriera Pons</strong> (DNI <strong>78541236L</strong>), nascut el <strong>22/11/2000</strong>, NASS <strong>259876543210</strong>, com a <strong>Mosso de magatzem</strong> (Grup <strong>Grup 6</strong>) del <strong>01/11/2026</strong> fins a <strong>31/01/2027</strong>, amb període de prova de <strong>15 dies</strong> i salari de <strong>1.450</strong> € bruts <strong>mensuals</strong>.<br><br>
+                    <strong>Clàusules específiques del model temporal:</strong><br>
+                    1. <em>Circumstàncies de la producció:</em> Codi a temps complet <strong>402</strong> per <strong>Increment ocasional de comandes campanya olivera</strong> durant <strong>3 mesos</strong>.<br>
+                    2. <em>Substitució:</em> Codi temps complet <strong>410</strong> per substituir a <strong>Marta Valls Ros</strong> (NIF <strong>38444555J</strong>) per causa de <strong>Maternitat i risc durant l'embaràs</strong>.<br>
+                    3. <em>Relleu a mitja jornada:</em> Codi temps parcial <strong>541</strong>, jornada de <strong>20 hores setmanals</strong> per jubilació parcial de <strong>Joan Prat Vila</strong> (nascut el <strong>04/03/1962</strong>) que redueix la seva jornada en un <strong>50%</strong>.
+                </div>
+                <div class="tags-pool" id="pool-1"></div>
+            </div>
+
+            <div class="sepe-document">
+                <div class="sepe-banner">
+                    <span>MINISTERIO DE TRABAJO Y ECONOMÍA SOCIAL | SEPE</span>
+                    <span>Cofinançat per la Unió Europea - FSE+</span>
+                </div>
+                <div class="sepe-doc-title">CONTRACTE DE TREBALL TEMPORAL</div>
+
+                <div class="sepe-section-header">DADES DE L'EMPRESA I DE LA PERSONA TREBALLADORA</div>
+                <div class="sepe-grid">
+                    <div class="sepe-cell col-4"><span class="field-label">CIF/NIF/NIE EMPRESA</span><div class="dropzone" data-tab="1" data-ans="F25789123"></div></div>
+                    <div class="sepe-cell col-8"><span class="field-label">NOM O RAÓ SOCIAL DE L'EMPRESA</span><div class="dropzone" data-tab="1" data-ans="Comercial Agrícola del Montsec, SCCL"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">SR./SRA. TREBALLADOR/A</span><div class="dropzone" data-tab="1" data-ans="David Masriera Pons"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">NIF/NIE</span><div class="dropzone" data-tab="1" data-ans="78541236L"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">DATA NAIXEMENT</span><div class="dropzone" data-tab="1" data-ans="22/11/2000"></div></div>
+                    <div class="sepe-cell col-6"><span class="field-label">Nº SEGURETAT SOCIAL</span><div class="dropzone" data-tab="1" data-ans="259876543210"></div></div>
+                    <div class="sepe-cell col-6"><span class="field-label">MUNICIPI CENTRE TREBALL</span><div class="dropzone" data-tab="1" data-ans="Tremp"></div></div>
+                </div>
+
+                <div class="sepe-section-header">CLÀUSULES GENERALS</div>
+                <div class="clauses-box">
+                    <p><strong>PRIMERA:</strong> el/la treballador/a prestarà els seus serveis com a <span class="dropzone" data-tab="1" data-ans="Mosso de magatzem"></span> inclòs en el grup professional de <span class="dropzone" data-tab="1" data-ans="Grup 6"></span>.</p>
+                    <p><strong>TERCERA:</strong> la durada del contracte actual s'estendrà des de <span class="dropzone" data-tab="1" data-ans="01/11/2026"></span> fins a <span class="dropzone" data-tab="1" data-ans="31/01/2027"></span>. S'estableix un període de prova de <span class="dropzone" data-tab="1" data-ans="15 dies"></span>.</p>
+                    <p><strong>QUARTA:</strong> el/la treballador/a percebrà una retribució total de <span class="dropzone" data-tab="1" data-ans="1.450"></span> euros bruts <span class="dropzone" data-tab="1" data-ans="mensuals"></span>.</p>
+                </div>
+
+                <div class="sepe-section-header">CLÀUSULES ESPECÍFIQUES PER CIRCUMSTÀNCIES DE LA PRODUCCIÓ</div>
+                <div class="clauses-box">
+                    <p>Codi de contracte Temps Complet: <span class="dropzone" data-tab="1" data-ans="402"></span>. Les circumstàncies concretes que justifiquen aquest contracte són: <span class="dropzone" data-tab="1" data-ans="Increment ocasional de comandes campanya olivera"></span>. La durada prevista (màx. 6 mesos) serà: <span class="dropzone" data-tab="1" data-ans="3 mesos"></span>.</p>
+                </div>
+
+                <div class="sepe-section-header">CLÀUSULES ESPECÍFIQUES PER A SUBSTITUCIÓ DE PERSONA TREBALLADORA</div>
+                <div class="clauses-box">
+                    <p>Codi de contracte Temps Complet: <span class="dropzone" data-tab="1" data-ans="410"></span>. Substituir el/la treballador/a <span class="dropzone" data-tab="1" data-ans="Marta Valls Ros"></span> amb NIF/NIE <span class="dropzone" data-tab="1" data-ans="38444555J"></span> sent la causa: <span class="dropzone" data-tab="1" data-ans="Maternitat i risc durant l'embaràs"></span>.</p>
+                </div>
+
+                <div class="sepe-section-header">CLÀUSULES ESPECÍFIQUES DE RELLEU (A MITJA JORNADA)</div>
+                <div class="clauses-box">
+                    <p>Codi de contracte Temps Parcial: <span class="dropzone" data-tab="1" data-ans="541"></span> amb una jornada ordinària a temps parcial de <span class="dropzone" data-tab="1" data-ans="20 hores setmanals"></span>. Que el/la treballador/a de l'Empresa que accedeix a la jubilació parcial, Sr./Sra. <span class="dropzone" data-tab="1" data-ans="Joan Prat Vila"></span> nascut el <span class="dropzone" data-tab="1" data-ans="04/03/1962"></span> redueix la seva jornada ordinària de treball i el seu salari en un <span class="dropzone" data-tab="1" data-ans="50%"></span>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTANYA 3: FORMATIU PRÀCTICA PROFESSIONAL -->
+    <div class="tab-pane hidden" id="tab-2">
+        <div class="workspace">
+            <div class="case-panel">
+                <h3>Supòsit 3: Formatiu Pràctica Professional</h3>
+                <div class="case-story">
+                    L'assessoria <strong>Gestoria Pallars Assessors, SL</strong> (CIF <strong>B25999111</strong>), de <strong>La Pobla de Segur</strong>, contracta a <strong>Júlia Puigarnau Mora</strong> (DNI <strong>47999888Z</strong>), nascuda el <strong>19/04/2005</strong>.<br><br>
+                    Està en possessió del títol de <strong>Tècnic en Gestió Administrativa (CFGM)</strong> obtingut en data <strong>20/06/2026</strong>. Prestarà serveis com a <strong>Auxiliar Administrativa Contable</strong> (Grup <strong>Grup 5</strong>) al centre de <strong>Av. Estació, 14 - La Pobla de Segur</strong>, a jornada completa de <strong>40 hores</strong>. La durada serà de <strong>12 mesos</strong>, des de <strong>15/10/2026</strong> fins a <strong>14/10/2027</strong>, amb un període de prova de <strong>1 mes</strong>, retribució de <strong>1.320</strong> € bruts mensuals segons el concepte <strong>Salari segons conveni col·lectiu</strong>, <strong>30 dies naturals</strong> de vacances i s'annexa el document obligatori <strong>Pla Formatiu Individual</strong>. Codi de contracte ordinari sense bonificació a temps complet: <strong>420</strong>.
+                </div>
+                <div class="tags-pool" id="pool-2"></div>
+            </div>
+
+            <div class="sepe-document">
+                <div class="sepe-banner">
+                    <span>MINISTERIO DE TRABAJO Y ECONOMÍA SOCIAL | SEPE</span>
+                    <span>Cofinançat per la Unió Europea - FSE+</span>
+                </div>
+                <div class="sepe-doc-title">CONTRACTE DE TREBALL FORMATIU PER A L'OBTENCIÓ DE LA PRÀCTICA PROFESSIONAL</div>
+
+                <div class="sepe-section-header">DADES DE L'EMPRESA I DE LA PERSONA TREBALLADORA</div>
+                <div class="sepe-grid">
+                    <div class="sepe-cell col-4"><span class="field-label">CIF/NIF/NIE EMPRESA</span><div class="dropzone" data-tab="2" data-ans="B25999111"></div></div>
+                    <div class="sepe-cell col-5"><span class="field-label">NOM O RAÓ SOCIAL DE L'EMPRESA</span><div class="dropzone" data-tab="2" data-ans="Gestoria Pallars Assessors, SL"></div></div>
+                    <div class="sepe-cell col-3"><span class="field-label">MUNICIPI</span><div class="dropzone" data-tab="2" data-ans="La Pobla de Segur"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">SR./SRA. TREBALLADOR/A</span><div class="dropzone" data-tab="2" data-ans="Júlia Puigarnau Mora"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">NIF/NIE</span><div class="dropzone" data-tab="2" data-ans="47999888Z"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">DATA NAIXEMENT</span><div class="dropzone" data-tab="2" data-ans="19/04/2005"></div></div>
+                </div>
+
+                <div class="sepe-section-header">DECLAREN</div>
+                <div class="clauses-box">
+                    <p>a) Que el/la treballador/a està en possessió del títol o certificat de professionalitat del Sistema de Formació Professional <span class="dropzone" data-tab="2" data-ans="Tècnic en Gestió Administrativa (CFGM)"></span> o en condicions d'obtenir-ho per haver acabat amb data <span class="dropzone" data-tab="2" data-ans="20/06/2026"></span> els estudis corresponents al mateix que li capaciten per a la pràctica professional objecte d'aquest contracte.</p>
+                </div>
+
+                <div class="sepe-section-header">CLÀUSULES</div>
+                <div class="clauses-box">
+                    <p><strong>PRIMERA:</strong> el/la treballador/a prestarà els seus serveis com <span class="dropzone" data-tab="2" data-ans="Auxiliar Administrativa Contable"></span> per a l'obtenció de la pràctica professional adequada al seu nivell d'estudis, inclòs en el grup professional <span class="dropzone" data-tab="2" data-ans="Grup 5"></span>. Al centre de treball situat en <span class="dropzone" data-tab="2" data-ans="Av. Estació, 14 - La Pobla de Segur"></span>.</p>
+                    <p><strong>SEGONA:</strong> A temps complet: la jornada de treball serà de <span class="dropzone" data-tab="2" data-ans="40 hores"></span> setmanals.</p>
+                    <p><strong>TERCERA:</strong> la durada del present contracte serà de <span class="dropzone" data-tab="2" data-ans="12 mesos"></span> i s'estendrà des de <span class="dropzone" data-tab="2" data-ans="15/10/2026"></span> fins a <span class="dropzone" data-tab="2" data-ans="14/10/2027"></span>. S'estableix un període de prova de <span class="dropzone" data-tab="2" data-ans="1 mes"></span>.</p>
+                    <p><strong>QUARTA:</strong> el/la treballador/a percebrà una retribució total de <span class="dropzone" data-tab="2" data-ans="1.320"></span> euros bruts mensuals que es distribueixen en <span class="dropzone" data-tab="2" data-ans="Salari segons conveni col·lectiu"></span>.</p>
+                    <p><strong>SISENA i SETENA:</strong> la durada de les vacances anuals serà <span class="dropzone" data-tab="2" data-ans="30 dies naturals"></span> i s'annexa <span class="dropzone" data-tab="2" data-ans="Pla Formatiu Individual"></span>. Codi de contracte Formatiu Ordinari Temps Complet: <span class="dropzone" data-tab="2" data-ans="420"></span>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTANYA 4: PACTE D'HORES COMPLEMENTÀRIES -->
+    <div class="tab-pane hidden" id="tab-3">
+        <div class="workspace">
+            <div class="case-panel">
+                <h3>Supòsit 4: Annex d'Hores Complementàries</h3>
+                <div class="case-story">
+                    S'acorda l'annex de pacte d'hores complementàries per a un contracte a temps parcial (no inferior a <strong>10 hores setmanals</strong> en còmput anual).<br><br>
+                    • Màxim d'hores complementàries anuals pactades: <strong>150 hores</strong>, que suposen un <strong>30%</strong> respecte a les hores ordinàries pactades en el contracte subscrit el dia <strong>02/11/2026</strong>.<br>
+                    • Registrat al Servei Públic d'Ocupació de <strong>Tremp</strong> amb data <strong>03/11/2026</strong> i amb el número <strong>E-25-2026-009841</strong>.<br>
+                    • Preavís mínim legal de l'empresari: <strong>3 dies</strong> d'antelació.<br>
+                    • Preavís de renúncia de la persona treballadora: <strong>15 dies</strong>.<br>
+                    • Hores complementàries voluntàries en contractes indefinits: màxim del <strong>15%</strong>.<br>
+                    • Es signa a la localitat de <strong>Tremp</strong> el dia <strong>2</strong> de <strong>novembre</strong> de <strong>2026</strong>.
+                </div>
+                <div class="tags-pool" id="pool-3"></div>
+            </div>
+
+            <div class="sepe-document">
+                <div class="sepe-banner">
+                    <span>MINISTERIO DE TRABAJO Y ECONOMÍA SOCIAL | SEPE</span>
+                    <span>Cofinançat per la Unió Europea - FSE+</span>
+                </div>
+                <div class="sepe-doc-title">ANNEX AL CONTRACTE DE TREBALL TEMPORAL I INDEFINIT A TEMPS PARCIAL SOBRE PACTE D'HORES COMPLEMENTÀRIES</div>
+
+                <div class="sepe-section-header">CLÀUSULES DE L'ANNEX OFICIAL</div>
+                <div class="clauses-box">
+                    <p><strong>REQUISIT PREVI (Lletra d):</strong> Només es podrà formalitzar un pacte d'hores complementàries en el cas de contractes a temps parcial amb una jornada de treball no inferior a <span class="dropzone" data-tab="3" data-ans="10 hores setmanals"></span> en còmput anual.</p>
+                    <p><strong>PRIMERA:</strong> la persona treballadora contractada es compromet a realitzar, a petició de la persona empresària, fins a un màxim de <span class="dropzone" data-tab="3" data-ans="150 hores"></span> hores complementàries anuals, que suposen un <span class="dropzone" data-tab="3" data-ans="30%"></span> respecte a les hores pactades en el contracte subscrit el dia <span class="dropzone" data-tab="3" data-ans="02/11/2026"></span> i comunicat o registrat en el Servei Públic d'Ocupació de <span class="dropzone" data-tab="3" data-ans="Tremp"></span> amb data <span class="dropzone" data-tab="3" data-ans="03/11/2026"></span> amb el número <span class="dropzone" data-tab="3" data-ans="E-25-2026-009841"></span>.</p>
+                    <p><strong>TERCERA:</strong> la persona empresària preavisarà amb un mínim de <span class="dropzone" data-tab="3" data-ans="3 dies"></span> d'antelació a la seva realització el dia i l'hora en què la persona treballadora haurà de realitzar les hores complementàries.</p>
+                    <p><strong>SISENA:</strong> el pacte d'hores complementàries podrà quedar sense efecte per renúncia de la persona treballadora mitjançant un preavís de <span class="dropzone" data-tab="3" data-ans="15 dies"></span>, quan concorrin les circumstàncies regulades en l'apartat 5.e) de l'article 12 de l'ET.</p>
+                    <p><strong>OCTAVA:</strong> es poden acordar la realització d'hores complementàries VOLUNTÀRIES, el número de les quals no podrà superar el <span class="dropzone" data-tab="3" data-ans="15%"></span> vinculades al contracte indefinit.</p>
+                    <p>I per deixar-ne constància, se signa el present annex per triplicat exemplar: A <span class="dropzone" data-tab="3" data-ans="Tremp"></span> el <span class="dropzone" data-tab="3" data-ans="2"></span> de <span class="dropzone" data-tab="3" data-ans="novembre"></span> de <span class="dropzone" data-tab="3" data-ans="2026"></span>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTANYA 5: COMUNICACIÓ DE CRIDA FIXOS-DISCONTINUS -->
+    <div class="tab-pane hidden" id="tab-4">
+        <div class="workspace">
+            <div class="case-panel">
+                <h3>Supòsit 5: Comunicació de Crida Fixos-Discontinus</h3>
+                <div class="case-story">
+                    L'empresa <strong>Serveis Turístics Pallars, SL</strong> (CIF <strong>B25123456</strong>), representada per <strong>Anna Solé Mauri</strong> (NIF <strong>40111222B</strong>) en concepte de <strong>Directora</strong>, amb domicili al <strong>C/ Major, 45</strong> del municipi de <strong>La Pobla de Segur</strong> (CP <strong>25500</strong>, país <strong>Espanya</strong>), CCC del règim <strong>General (0111)</strong> núm. <strong>25009988776</strong> i activitat econòmica d'<strong>Allotjament turístic i aventura</strong>.<br><br>
+                    En aplicació del conveni col·lectiu d'<strong>Hostaleria i Turisme de Catalunya</strong>, comunica al SEPE de <strong>Tremp</strong> la crida de:<br>
+                    • Treballadora 01: <strong>Valls Gómez, Sara</strong> amb NIF <strong>38941258Z</strong>, inici el <strong>15/06/2027</strong>, fi prevista el <strong>15/09/2027</strong> i núm. de registre de contracte <strong>E-25-2025-004120</strong>.
+                </div>
+                <div class="tags-pool" id="pool-4"></div>
+            </div>
+
+            <div class="sepe-document">
+                <div class="sepe-banner">
+                    <span>MINISTERIO DE TRABAJO Y ECONOMÍA SOCIAL | SEPE</span>
+                    <span>Cofinançat per la Unió Europea - FSE+</span>
+                </div>
+                <div class="sepe-doc-title">COMUNICACIÓ DE CRIDA A L'ACTIVITAT DE LES PERSONES TREBALLADORES FIXES DISCONTÍNUES</div>
+
+                <div class="sepe-section-header">DADES DE L'EMPRESA</div>
+                <div class="sepe-grid">
+                    <div class="sepe-cell col-4"><span class="field-label">CIF/NIF/NIE</span><div class="dropzone" data-tab="4" data-ans="B25123456"></div></div>
+                    <div class="sepe-cell col-8"><span class="field-label">NOM O RAÓ SOCIAL DE L'EMPRESA</span><div class="dropzone" data-tab="4" data-ans="Serveis Turístics Pallars, SL"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">SR./SRA.</span><div class="dropzone" data-tab="4" data-ans="Anna Solé Mauri"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">NIF/NIE</span><div class="dropzone" data-tab="4" data-ans="40111222B"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">EN CONCEPTE (1)</span><div class="dropzone" data-tab="4" data-ans="Directora"></div></div>
+                    <div class="sepe-cell col-3"><span class="field-label">DOMICILI SOCIAL</span><div class="dropzone" data-tab="4" data-ans="C/ Major, 45"></div></div>
+                    <div class="sepe-cell col-3"><span class="field-label">MUNICIPI</span><div class="dropzone" data-tab="4" data-ans="La Pobla de Segur"></div></div>
+                    <div class="sepe-cell col-3"><span class="field-label">CODI POSTAL</span><div class="dropzone" data-tab="4" data-ans="25500"></div></div>
+                    <div class="sepe-cell col-3"><span class="field-label">PAÍS</span><div class="dropzone" data-tab="4" data-ans="Espanya"></div></div>
+                </div>
+
+                <div class="sepe-section-header">DADES DEL COMPTE DE COTITZACIÓ</div>
+                <div class="sepe-grid">
+                    <div class="sepe-cell col-4"><span class="field-label">RÈGIM</span><div class="dropzone" data-tab="4" data-ans="General (0111)"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">CODI (CCC)</span><div class="dropzone" data-tab="4" data-ans="25009988776"></div></div>
+                    <div class="sepe-cell col-4"><span class="field-label">ACTIVITAT ECONÒMICA</span><div class="dropzone" data-tab="4" data-ans="Allotjament turístic i aventura"></div></div>
+                </div>
+
+                <div class="clauses-box">
+                    <p>A l'efecte de realitzar la crida prevista en l'article 16 de l'Estatut dels Treballadors, garantint l'ocupació prevista en el conveni col·lectiu de <span class="dropzone" data-tab="4" data-ans="Hostaleria i Turisme de Catalunya"></span>, es comunica al Servei Públic d'Ocupació de <span class="dropzone" data-tab="4" data-ans="Tremp"></span> a LES PERSONES TREBALLADORES QUE A CONTINUACIÓ ES RELACIONEN:</p>
+
+                    <table class="sepe-table">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>COGNOMS I NOM (2)</th>
+                                <th>NIF/NIE</th>
+                                <th>DATA INICI</th>
+                                <th>DATA FI PREVISTA</th>
+                                <th>Núm. REGISTRE O COMUNICACIÓ CONTRACTE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>01</strong></td>
+                                <td><div class="dropzone" data-tab="4" data-ans="Valls Gómez, Sara"></div></td>
+                                <td><div class="dropzone" data-tab="4" data-ans="38941258Z"></div></td>
+                                <td><div class="dropzone" data-tab="4" data-ans="15/06/2027"></div></td>
+                                <td><div class="dropzone" data-tab="4" data-ans="15/09/2027"></div></td>
+                                <td><div class="dropzone" data-tab="4" data-ans="E-25-2025-004120"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="submit-bar">
+        <div>
+            <strong>Destinatari dels resultats:</strong> <code>ecanal1@iestremp.cat</code><br>
+            <small>Revisa que hagis completat totes les pestanyes abans d'enviar definitivament.</small>
+        </div>
+        <button id="btn-submit" class="btn-primary" style="width: auto; padding: 14px 35px;" onclick="finishAndSend()">Finalitzar i Enviar Nota al Professor</button>
+    </div>
+
+</div>
+
+<!-- 3. PANTALLA FINAL D'ENVIAMENT -->
+<div id="final-screen" class="hidden" style="max-width: 650px; margin: 70px auto; background: white; padding: 40px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+    <h2 style="color: var(--sepe-blue);">Exercici Completat</h2>
+    <p id="final-summary" style="font-size: 1.25rem; font-weight: bold; margin: 20px 0;"></p>
+    <div id="final-breakdown" style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px; line-height: 1.8;"></div>
+    <p id="send-status" style="font-weight: bold; padding: 12px; border-radius: 6px;"></p>
+</div>
+
+<script>
+    const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx8qbZouVlbROfGI0WNV-uk5yWJ4LHqMvBlke8zKM7D8NVnYdKSjDDTqT4tgyK7bewGYg/exec";
+
+    let studentName = "";
+
+    const tabStats = [
+        { total: 0, correctFirstTry: 0 },
+        { total: 0, correctFirstTry: 0 },
+        { total: 0, correctFirstTry: 0 },
+        { total: 0, correctFirstTry: 0 },
+        { total: 0, correctFirstTry: 0 }
+    ];
+
+    window.addEventListener('beforeunload', (e) => {
+        if (studentName && document.getElementById('final-screen').classList.contains('hidden')) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function startApp() {
+        const inp = document.getElementById('input-nom').value.trim();
+        if (!inp) {
+            alert("Si us plau, escriu el teu nom i cognoms per començar.");
+            return;
+        }
+        studentName = inp;
+        document.getElementById('student-badge').innerText = "👤 Alumne/a: " + studentName;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('header-status').classList.remove('hidden');
+        initDragAndDropPools();
+    }
+
+    function openTab(idx) {
+        for (let i = 0; i < 5; i++) {
+            document.getElementById('tab-' + i).classList.toggle('hidden', i !== idx);
+            document.getElementById('tbtn-' + i).classList.toggle('active', i === idx);
+        }
+    }
+
+    function initDragAndDropPools() {
+        for (let t = 0; t < 5; t++) {
+            const zones = Array.from(document.querySelectorAll(`.dropzone[data-tab="${t}"]`));
+            tabStats[t].total = zones.length;
+            const pool = document.getElementById('pool-' + t);
+
+            const items = zones.map((z, i) => ({
+                id: `tag_${t}_${i}`,
+                text: z.getAttribute('data-ans'),
+                tab: t
+            }));
+            items.sort(() => Math.random() - 0.5);
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'drag-tag';
+                div.draggable = true;
+                div.id = item.id;
+                div.innerText = item.text;
+                div.dataset.ans = item.text;
+                div.dataset.tab = item.tab;
+                div.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', div.id);
+                });
+                pool.appendChild(div);
+            });
+
+            zones.forEach(zone => {
+                zone.addEventListener('dragover', e => {
+                    if (!zone.dataset.filled) {
+                        e.preventDefault();
+                        zone.classList.add('dragover');
+                    }
+                });
+                zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+                zone.addEventListener('drop', e => handleDrop(e, zone));
+            });
+        }
+    }
+
+    function handleDrop(e, targetZone) {
+        e.preventDefault();
+        targetZone.classList.remove('dragover');
+        if (targetZone.dataset.filled === "true") return;
+
+        const tagId = e.dataTransfer.getData('text/plain');
+        const tagEl = document.getElementById(tagId);
+        if (!tagEl) return;
+
+        const tabIdx = parseInt(targetZone.getAttribute('data-tab'));
+        if (parseInt(tagEl.dataset.tab) !== tabIdx) return;
+
+        const draggedValue = tagEl.dataset.ans;
+        const expectedValue = targetZone.getAttribute('data-ans');
+
+        if (draggedValue === expectedValue) {
+            targetZone.innerText = draggedValue;
+            targetZone.classList.add('correct');
+            targetZone.dataset.filled = "true";
+            tagEl.remove();
+            tabStats[tabIdx].correctFirstTry++;
+        } else {
+            const correctZone = Array.from(document.querySelectorAll(`.dropzone[data-tab="${tabIdx}"]`))
+                .find(z => z.getAttribute('data-ans') === draggedValue && z.dataset.filled !== "true");
+
+            if (correctZone) {
+                correctZone.innerText = draggedValue;
+                correctZone.title = "Dada autoubicada (error comès)";
+                correctZone.classList.add('auto-corrected');
+                correctZone.dataset.filled = "true";
+                tagEl.remove();
+            }
+        }
+
+        updateScores();
+    }
+
+    function updateScores() {
+        let globalScore = 0;
+        for (let t = 0; t < 5; t++) {
+            const tabScore10 = tabStats[t].total > 0
+                ? (tabStats[t].correctFirstTry / tabStats[t].total) * 10
+                : 0;
+            const tabWeight2 = (tabScore10 / 10) * 2;
+            globalScore += tabWeight2;
+            document.getElementById('tscore-' + t).innerText = tabScore10.toFixed(2);
+        }
+        document.getElementById('global-score').innerText = globalScore.toFixed(2);
+        return globalScore;
+    }
+
+    async function finishAndSend() {
+        const buides = document.querySelectorAll('.dropzone:not([data-filled="true"])').length;
+        if (buides > 0) {
+            if (!confirm(`Tens ${buides} camps pendents d'omplir entre totes les pestanyes. Si envies ara, no sumaran punts. Vols finalitzar igualment?`)) {
+                return;
+            }
+        } else {
+            if (!confirm("Segur que vols finalitzar i registrar la nota definitiva a ecanal1@iestremp.cat?")) {
+                return;
+            }
+        }
+
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.innerText = "Enviant resultats...";
+
+        const finalGrade = updateScores().toFixed(2);
+        const tabNames = [
+            "1. Contracte Indefinit",
+            "2. Contracte Temporal (Producció, Relleu i Substitució)",
+            "3. Contracte Formatiu Pràctica Professional",
+            "4. Annex Pacte d'Hores Complementàries",
+            "5. Comunicació Crida Fixos-Discontinus"
+        ];
+
+        let breakdownHTML = "";
+        let breakdownText = "";
+        let pScores = [];
+
+        for (let t = 0; t < 5; t++) {
+            const s10 = ((tabStats[t].correctFirstTry / tabStats[t].total) * 10).toFixed(2);
+            const s2 = ((tabStats[t].correctFirstTry / tabStats[t].total) * 2).toFixed(2);
+            pScores.push(s10);
+            breakdownHTML += `<div>• <strong>${tabNames[t]}:</strong> ${s10} / 10 punts <em>(${s2} / 2 pts globals)</em> — Encerts: ${tabStats[t].correctFirstTry}/${tabStats[t].total}</div>`;
+            breakdownText += `- ${tabNames[t]}: ${s10}/10 (${s2}/2 pts) [${tabStats[t].correctFirstTry}/${tabStats[t].total} encerts]\n`;
+        }
+
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('final-screen').classList.remove('hidden');
+        document.getElementById('final-summary').innerText = `Alumne/a: ${studentName} — Qualificació Final: ${finalGrade} / 10`;
+        document.getElementById('final-breakdown').innerHTML = breakdownHTML;
+
+        const statusEl = document.getElementById('send-status');
+        statusEl.style.background = "#fff3cd";
+        statusEl.style.color = "#856404";
+        statusEl.innerText = "⏳ Enviant qualificació de forma directa a ecanal1@iestremp.cat...";
+
+        const payload = {
+            alumne: studentName,
+            destinatari: "ecanal1@iestremp.cat",
+            nota_global: finalGrade,
+            pestanya_1: pScores[0],
+            pestanya_2: pScores[1],
+            pestanya_3: pScores[2],
+            pestanya_4: pScores[3],
+            pestanya_5: pScores[4],
+            detall_text: breakdownText
+        };
+
+        try {
+            await fetch(ENDPOINT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            statusEl.style.background = "#e8f5e9";
+            statusEl.style.color = "#2e7d32";
+            statusEl.innerText = "✅ Qualificació enviada i registrada correctament al full de càlcul!";
+        } catch (err) {
+            statusEl.style.background = "#ffebee";
+            statusEl.style.color = "#c62828";
+            statusEl.innerText = "⚠️ Hi ha hagut un problema de connexió en l'enviament. Fes una captura d'aquesta pantalla per mostrar-la al professor.";
+        }
+    }
+</script>
+
+</body>
+</html>
